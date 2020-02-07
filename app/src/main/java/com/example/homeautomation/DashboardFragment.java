@@ -180,11 +180,14 @@ public class DashboardFragment extends Fragment implements View.OnClickListener 
                     bulb1Switch.setChecked(true);
                     inc_s1.setText("ON");
                     inc_s1.setTextColor(Color.RED);
+                    NotificationHelper.dispNotification(getContext(), "Bulb1 changed", "changed to on");
+
                 } else {
                     b1.setImageResource(R.drawable.bulb_off);
                     bulb1Switch.setChecked(false);
                     inc_s1.setText("OFF");
                     inc_s1.setTextColor(Color.BLACK);
+                    NotificationHelper.dispNotification(getContext(), "Bulb1 changed", "changed to on");
 
                 }
             }

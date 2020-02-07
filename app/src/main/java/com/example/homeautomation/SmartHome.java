@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -36,11 +37,12 @@ public class SmartHome extends AppCompatActivity {
     private FirebaseUser curUser;
     private AppBarConfiguration mAppBarConfiguration;
 
+    private TextView tvNavUsername;
+
     MediaPlayer logoutsp;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         logoutsp=MediaPlayer.create(getApplicationContext(),R.raw.thank);
         mAuth = FirebaseAuth.getInstance();
         userRef = FirebaseDatabase.getInstance().getReference("users");
@@ -49,13 +51,6 @@ public class SmartHome extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                Log.d("NICK", "button button button..................");
-            }
-        });
 //       FloatingActionButton fab = findViewById(R.id.fab);
 //        fab.setOnClickListener(new View.OnClickListener() {
 //            @Override
@@ -64,8 +59,19 @@ public class SmartHome extends AppCompatActivity {
 //                        .setAction("Action", null).show();
 //            }
 //        });
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
-        NavigationView navigationView = findViewById(R.id.nav_view);
+        final DrawerLayout drawer = findViewById(R.id.drawer_layout);
+
+        final NavigationView navigationView = findViewById(R.id.nav_view);
+        tvNavUsername = navigationView.getHeaderView(0).findViewById(R.id.nav_username);
+        tvNavUsername.setText(mAuth.getCurrentUser().getEmail());
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                drawer.openDrawer(navigationView);
+                Log.d("NICK", "button button button..................");
+            }
+        });
 
         Menu menuNav=navigationView.getMenu();
         final MenuItem usersMenuItem = menuNav.findItem(R.id.usersFragment);

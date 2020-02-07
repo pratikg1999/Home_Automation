@@ -9,7 +9,13 @@
         android:roundIcon="@drawable/app_logo"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.FullScreen">
-        <activity android:name=".splashscreen"
+        <service
+            android:name=".CloudMessageService"
+            android:enabled="true"
+            android:exported="true"></service>
+
+        <activity
+            android:name=".splashscreen"
             android:theme="@style/AppTheme.FullScreen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -23,8 +29,7 @@
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".MainActivity"
-            android:theme="@style/AppTheme.FullScreen">
-        </activity>
+            android:theme="@style/AppTheme.FullScreen"></activity>
     </application>
 
 </manifest>
