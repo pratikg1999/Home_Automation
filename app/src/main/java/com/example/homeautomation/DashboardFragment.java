@@ -5,8 +5,12 @@ import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.media.Image;
 import android.media.MediaPlayer;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
 import android.util.Log;
@@ -29,14 +33,23 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.SimpleTarget;
+import com.bumptech.glide.request.transition.Transition;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.concurrent.ExecutionException;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -45,10 +58,16 @@ import static android.app.Activity.RESULT_OK;
  * A simple {@link Fragment} subclass.
  */
 public class DashboardFragment extends Fragment implements View.OnClickListener {
+    HashMap<String, Bitmap> intrudersData = new HashMap<>();
+
     DatabaseReference database;
     DatabaseReference s1Ref;
     DatabaseReference s2Ref;
     DatabaseReference s3Ref;
+    final DatabaseReference intrudersRef= FirebaseDatabase.getInstance().getReference("intruders");;
+//    final ImageView imageView = new ImageView(getContext());
+//    Bitmap theBitmap;
+
 
     RotateAnimation rotate;
 
@@ -86,7 +105,6 @@ public class DashboardFragment extends Fragment implements View.OnClickListener 
     MediaPlayer lightson;
 
 
-
     public DashboardFragment() {
         // Required empty public constructor
 
@@ -98,9 +116,26 @@ public class DashboardFragment extends Fragment implements View.OnClickListener 
         this.context = context;
     }
 
+    static class BitmapDownloader extends AsyncTask<URL, Void, Bitmap> {
+
+        @Override
+        protected Bitmap doInBackground(URL... urls) {
+            Bitmap image = null;
+            try {
+                image = BitmapFactory.decodeStream(urls[0].openConnection().getInputStream());
+            } catch (IOException e) {
+                System.out.println(e);
+            }
+            Log.d("this is bitmap", image.toString());
+
+            return image;
+        }
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
         // Inflate the layout for this fragment
         database = FirebaseDatabase.getInstance().getReference("smarthome");
         s1Ref = database.child("s1");
@@ -108,24 +143,22 @@ public class DashboardFragment extends Fragment implements View.OnClickListener 
         s3Ref = database.child("s3");
 
         //voice decelerationn
-          alloff=MediaPlayer.create(getContext(),R.raw.allappliancesturnedoff);
-          allon=MediaPlayer.create(getContext(),R.raw.allappliancesturnedon);
+        alloff = MediaPlayer.create(getContext(), R.raw.allappliancesturnedoff);
+        allon = MediaPlayer.create(getContext(), R.raw.allappliancesturnedon);
 
-        s1on=MediaPlayer.create(getContext(),R.raw.firstlightturnon);
-        s1off=MediaPlayer.create(getContext(),R.raw.firstlightturnoff);
+        s1on = MediaPlayer.create(getContext(), R.raw.firstlightturnon);
+        s1off = MediaPlayer.create(getContext(), R.raw.firstlightturnoff);
 
-        s2on=MediaPlayer.create(getContext(),R.raw.secondlightturnedon);
-        s2off=MediaPlayer.create(getContext(),R.raw.secondlightturnedoff);
+        s2on = MediaPlayer.create(getContext(), R.raw.secondlightturnedon);
+        s2off = MediaPlayer.create(getContext(), R.raw.secondlightturnedoff);
 
-        ligtsoff=MediaPlayer.create(getContext(),R.raw.lightsturnoff);
-        lightson=MediaPlayer.create(getContext(),R.raw.lightsturnon);
+        ligtsoff = MediaPlayer.create(getContext(), R.raw.lightsturnoff);
+        lightson = MediaPlayer.create(getContext(), R.raw.lightsturnon);
 
-        s3off=MediaPlayer.create(getContext(),R.raw.fanturnoff);
-        sl3slow=MediaPlayer.create(getContext(),R.raw.fanturnontoslow);
-        s3medium=MediaPlayer.create(getContext(),R.raw.fanturnontomedium);
-        s3fast=MediaPlayer.create(getContext(),R.raw.fanturnontofast);
-
-
+        s3off = MediaPlayer.create(getContext(), R.raw.fanturnoff);
+        sl3slow = MediaPlayer.create(getContext(), R.raw.fanturnontoslow);
+        s3medium = MediaPlayer.create(getContext(), R.raw.fanturnontomedium);
+        s3fast = MediaPlayer.create(getContext(), R.raw.fanturnontofast);
 
 
         View v = inflater.inflate(R.layout.fragment_dashboard, container, false);
@@ -135,14 +168,15 @@ public class DashboardFragment extends Fragment implements View.OnClickListener 
         bulb2Switch = v.findViewById(R.id.bulb2Switch);
         fanSeekBar = v.findViewById(R.id.fan);
         fanImage = v.findViewById(R.id.fanImage);
+//        imageView = new ImageView(getContext());
 
-        inc_s1=v.findViewById(R.id.inc_s1);
-        inc_s2=v.findViewById(R.id.inc_s2);
-        inc_s3=v.findViewById(R.id.inc_s3);
+        inc_s1 = v.findViewById(R.id.inc_s1);
+        inc_s2 = v.findViewById(R.id.inc_s2);
+        inc_s3 = v.findViewById(R.id.inc_s3);
 
 
-        speechbtn=v.findViewById(R.id.speech_rec_btn);
-        mdialog=new ProgressDialog(getContext());
+        speechbtn = v.findViewById(R.id.speech_rec_btn);
+        mdialog = new ProgressDialog(getContext());
         mdialog.setTitle("Refreshing...");
         mdialog.setCanceledOnTouchOutside(false);
         mdialog.show();
@@ -153,6 +187,65 @@ public class DashboardFragment extends Fragment implements View.OnClickListener 
         b1.setOnClickListener(this);
         b2.setOnClickListener(this);
         speechbtn.setOnClickListener(this);
+
+        intrudersRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (DataSnapshot child : dataSnapshot.getChildren()) {
+                    String intruderUrl = child.getValue(String.class);
+                    if (!intrudersData.containsKey(intruderUrl)) {
+
+                        Bitmap bitmap = downloadBitmap(intruderUrl);
+                        if (bitmap != null) {
+                            intrudersData.put(intruderUrl, bitmap);
+                        }
+                    }
+                }
+
+                intrudersRef.addChildEventListener(new ChildEventListener() {
+                    @Override
+                    public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                        Log.d("linkfordata", dataSnapshot.toString());
+                        String intruderUrl = dataSnapshot.getValue(String.class);
+                        if (!intrudersData.containsKey(intruderUrl)) {
+                            Bitmap intruderBitmap = downloadBitmap(intruderUrl);
+                            if (intruderBitmap != null) {
+                                Log.d("thisisintruderBitmap", intruderBitmap.toString());
+                                intrudersData.put(intruderUrl, intruderBitmap);
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+                    }
+
+                    @Override
+                    public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+
+                    }
+
+                    @Override
+                    public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+
+        });
+
+
 
         bulb1Switch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -180,14 +273,14 @@ public class DashboardFragment extends Fragment implements View.OnClickListener 
                     bulb1Switch.setChecked(true);
                     inc_s1.setText("ON");
                     inc_s1.setTextColor(Color.RED);
-                    NotificationHelper.dispNotification(getContext(), "Bulb1 changed", "changed to on");
+//                    NotificationHelper.dispNotification(getContext(), "Bulb1 changed", "changed to on");
 
                 } else {
                     b1.setImageResource(R.drawable.bulb_off);
                     bulb1Switch.setChecked(false);
                     inc_s1.setText("OFF");
                     inc_s1.setTextColor(Color.BLACK);
-                    NotificationHelper.dispNotification(getContext(), "Bulb1 changed", "changed to on");
+//                    NotificationHelper.dispNotification(getContext(), "Bulb1 changed", "changed to on");
 
                 }
             }
@@ -231,7 +324,7 @@ public class DashboardFragment extends Fragment implements View.OnClickListener 
                 if (s3Val <= 3) {
                     fanSeekBar.setProgress(s3Val);
                     animateFan();
-                    switch (s3Val){
+                    switch (s3Val) {
                         case 0:
                             inc_s3.setText("OFF");
                             inc_s3.setTextColor(Color.BLACK);
@@ -273,7 +366,7 @@ public class DashboardFragment extends Fragment implements View.OnClickListener 
                 if (b) {
                     s3Ref.setValue(i);
 
-                    switch (i){
+                    switch (i) {
                         case 0:
                             s3off.start();
                             break;
@@ -306,8 +399,25 @@ public class DashboardFragment extends Fragment implements View.OnClickListener 
         });
 
 
-
         return v;
+    }
+
+    private Bitmap downloadBitmap(String intruderUrl) {
+        URL url = null;
+        Bitmap bitmap = null;
+        try {
+            url = new URL(intruderUrl);
+            bitmap = new BitmapDownloader().execute(url).get();
+//            Log.d("this is bitmap", bitmap.toString());
+
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+        return bitmap;
     }
 
 
@@ -348,10 +458,9 @@ public class DashboardFragment extends Fragment implements View.OnClickListener 
             case R.id.bulb1:
 //                Toast.makeText(context, "Updating bulb 1", Toast.LENGTH_SHORT).show();
                 s1Ref.setValue(s1Val == 1 ? 0 : 1);
-                if(0==(s1Val == 1 ? 0 : 1)){
+                if (0 == (s1Val == 1 ? 0 : 1)) {
                     s1on.start();
-                }
-                else if(1==(s1Val == 1 ? 0 : 1)) {
+                } else if (1 == (s1Val == 1 ? 0 : 1)) {
                     s1off.start();
                 }
                 break;
@@ -359,10 +468,9 @@ public class DashboardFragment extends Fragment implements View.OnClickListener 
             case R.id.bulb2:
 //                Toast.makeText(context, "Updating bulb 2", Toast.LENGTH_SHORT).show();
                 s2Ref.setValue(s2Val == 1 ? 0 : 1);
-                if(0==(s2Val == 1 ? 0 : 1)){
+                if (0 == (s2Val == 1 ? 0 : 1)) {
                     s2on.start();
-                }
-                else if(1==(s2Val == 1 ? 0 : 1)) {
+                } else if (1 == (s2Val == 1 ? 0 : 1)) {
                     s2off.start();
                 }
                 break;
@@ -381,73 +489,65 @@ public class DashboardFragment extends Fragment implements View.OnClickListener 
         return true;
     }
 
-    public void speech(){
-        Intent intent=new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+    public void speech() {
+        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
-        intent.putExtra(RecognizerIntent.EXTRA_PROMPT,"Please Speak");
+        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Please Speak");
 
-       try {
-           startActivityForResult(intent,1);
-       }catch (ActivityNotFoundException e){}
+        try {
+            startActivityForResult(intent, 1);
+        } catch (ActivityNotFoundException e) {
+        }
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        switch (requestCode){
+        switch (requestCode) {
 
             case 1:
-                if(resultCode==RESULT_OK && null!=data){
+                if (resultCode == RESULT_OK && null != data) {
 
-                    ArrayList<String> result=data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+                    ArrayList<String> result = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
 
-                    String str=result.get(0).toLowerCase();
+                    String str = result.get(0).toLowerCase();
 
 
                     // for all lights
-                    if(str.contains("lights") && str.contains("on")){
+                    if (str.contains("lights") && str.contains("on")) {
 
 
-                        lights newUser =  new lights(0,0,s3Val);
+                        lights newUser = new lights(0, 0, s3Val);
                         database.setValue(newUser);
                         lightson.start();
                         return;
-                    }
-                    else if (str.contains("lights") && str.contains("off")){
-                        lights newUser =  new lights(1,1,s3Val);
+                    } else if (str.contains("lights") && str.contains("off")) {
+                        lights newUser = new lights(1, 1, s3Val);
                         database.setValue(newUser);
                         ligtsoff.start();
                         return;
                     }
 
                     //for first & second light
-                    else if (str.contains("light")){
-                        if(str.contains("first")){
-                            if(str.contains("on"))
-                            {
+                    else if (str.contains("light")) {
+                        if (str.contains("first")) {
+                            if (str.contains("on")) {
                                 s1Ref.setValue(0);
                                 s1on.start();
                                 return;
-                            }
-                            else if(str.contains("off"))
-                            {
+                            } else if (str.contains("off")) {
                                 s1Ref.setValue(1);
                                 s1off.start();
                                 return;
                             }
 
-                        }
-
-                        else if(str.contains("second")){
-                            if(str.contains("off"))
-                            {
+                        } else if (str.contains("second")) {
+                            if (str.contains("off")) {
                                 s2Ref.setValue(1);
                                 s2off.start();
                                 return;
-                            }
-                            else if(str.contains("on"))
-                            {
+                            } else if (str.contains("on")) {
                                 s2Ref.setValue(0);
                                 s2on.start();
                                 return;
@@ -460,57 +560,40 @@ public class DashboardFragment extends Fragment implements View.OnClickListener 
 
                     //for fan
 
-                    else if(str.contains("fan")){
-                        if(str.contains("off"))
-                        {
+                    else if (str.contains("fan")) {
+                        if (str.contains("off")) {
                             s3Ref.setValue(0);
                             s3off.start();
                             return;
-                        }
-
-                        else if(str.contains("slow"))
-                        {
+                        } else if (str.contains("slow")) {
                             s3Ref.setValue(1);
                             sl3slow.start();
                             return;
-                        }
-                        else if(str.contains("medium"))
-                        {
+                        } else if (str.contains("medium")) {
                             s3Ref.setValue(2);
                             s3medium.start();
                             return;
-                        }
-                        else if(str.contains("fast"))
-                        {
+                        } else if (str.contains("fast")) {
+                            s3Ref.setValue(3);
+                            s3fast.start();
+                            return;
+                        } else if (str.contains("high")) {
+                            s3Ref.setValue(3);
+                            s3fast.start();
+                            return;
+                        } else if (str.contains("on")) {
                             s3Ref.setValue(3);
                             s3fast.start();
                             return;
                         }
-                        else if(str.contains("high"))
-                        {
-                            s3Ref.setValue(3);
-                            s3fast.start();
-                            return;
-                        }
-
-                        else if(str.contains("on"))
-                        {
-                            s3Ref.setValue(3);
-                            s3fast.start();
-                            return;
-                        }
-                    }
-
-                    else if(str.contains("appliances") || str.contains("devices")|| str.contains("all")){
-                        if(str.contains("off")){
-                            lights newUser =  new lights(1,1,0);
+                    } else if (str.contains("appliances") || str.contains("devices") || str.contains("all")) {
+                        if (str.contains("off")) {
+                            lights newUser = new lights(1, 1, 0);
                             database.setValue(newUser);
                             alloff.start();
                             return;
-                        }
-
-                        else if(str.contains("on")){
-                            lights newUser =  new lights(0,0,3);
+                        } else if (str.contains("on")) {
+                            lights newUser = new lights(0, 0, 3);
                             database.setValue(newUser);
                             allon.start();
                             return;
