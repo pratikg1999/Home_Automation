@@ -24,6 +24,7 @@ public class splashscreen extends AppCompatActivity {
     private final int SPLASH_DISPLAY_LENGTH = 3000;
     private static final String SUBSCRIBE_TO = MainActivity.SUBSCRIBE_TO;
     private static final String CHANNEL_ID = MainActivity.CHANNEL_ID;
+    private static final String IMAGE_TOPIC = MainActivity.IMAGE_TOPIC;
 
 
     public void createNotificationChannel(){
@@ -51,14 +52,15 @@ public class splashscreen extends AppCompatActivity {
             @Override
             public void onComplete(@NonNull Task<InstanceIdResult> task) {
                 if (task.isSuccessful()) {
-                    Toast.makeText(splashscreen.this, task.getResult().getId(), Toast.LENGTH_SHORT).show();
-                    Log.d("FCM", "onComplete: token" + task.getResult().getToken());
-                    Log.d("FCM", "onComplete: instanceid" + task.getResult().getId());
+//                    Toast.makeText(splashscreen.this, task.getResult().getId(), Toast.LENGTH_SHORT).show();
+                    Log.d("FCM", "onComplete: token " + task.getResult().getToken());
+                    Log.d("FCM", "onComplete: instanceid " + task.getResult().getId());
                     String token = task.getResult().getToken();
                 }
             }
         });
         FirebaseMessaging.getInstance().subscribeToTopic(SUBSCRIBE_TO);
+        FirebaseMessaging.getInstance().subscribeToTopic(IMAGE_TOPIC);
 
 
         new Handler().postDelayed(new Runnable(){

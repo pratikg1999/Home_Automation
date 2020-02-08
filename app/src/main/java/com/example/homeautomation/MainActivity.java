@@ -23,15 +23,17 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.InstanceIdResult;
 import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.RemoteMessage;
 
 public class MainActivity extends AppCompatActivity implements SignupFragment.OnFragmentInteractionListener, LoginFragment.OnFragmentInteractionListener {
+    public static final String IMAGE_TOPIC = "IMAGE";
     FirebaseAuth mAuth;
     FirebaseUser curUser;
 
     public static final String CHANNEL_ID = "NOTIFICATION CHANNEL";
     public static final String SUBSCRIBE_TO = "updates";
 
-
+//    public static RemoteMessage remoteMessage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,18 +43,19 @@ public class MainActivity extends AppCompatActivity implements SignupFragment.On
         curUser = mAuth.getCurrentUser();
 
 
-//        FirebaseInstanceId.getInstance().getInstanceId().addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
-//            @Override
-//            public void onComplete(@NonNull Task<InstanceIdResult> task) {
-//                if (task.isSuccessful()) {
+        FirebaseInstanceId.getInstance().getInstanceId().addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
+            @Override
+            public void onComplete(@NonNull Task<InstanceIdResult> task) {
+                if (task.isSuccessful()) {
 //                    Toast.makeText(MainActivity.this, task.getResult().getId(), Toast.LENGTH_SHORT).show();
-//                    Log.d("FCM", "onComplete: token" + task.getResult().getToken());
-//                    Log.d("FCM", "onComplete: instanceid" + task.getResult().getId());
-//                    String token = task.getResult().getToken();
-//                }
-//            }
-//        });
-//        FirebaseMessaging.getInstance().subscribeToTopic(SUBSCRIBE_TO);
+                    Log.d("FCM", "onComplete: token" + task.getResult().getToken());
+                    Log.d("FCM", "onComplete: instanceid" + task.getResult().getId());
+                    String token = task.getResult().getToken();
+                }
+            }
+        });
+        FirebaseMessaging.getInstance().subscribeToTopic(SUBSCRIBE_TO);
+        FirebaseMessaging.getInstance().subscribeToTopic(IMAGE_TOPIC);
 
 
         FragmentManager fragmentManager = getSupportFragmentManager();

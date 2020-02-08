@@ -6,21 +6,25 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 
+import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 
 import java.io.ByteArrayOutputStream;
 
 
-public class ShowImageFragment extends Fragment {
+public class ShowImageFragment extends DialogFragment {
     private static final String ARG_PARAM1 = "imageStr";
     private String imageStr;
     private ImageView ivShow;
     private Bitmap biImage;
+    private Button btnWhite;
+    private Button btnBlack;
 
     private OnFragmentInteractionListener mListener;
 
@@ -59,6 +63,15 @@ public class ShowImageFragment extends Fragment {
         ivShow = (ImageView)v.findViewById(R.id.ivShow);
 //        ivShow.setImageURI(Uri.parse(imageStr));
         ivShow.setImageBitmap(biImage);
+        btnWhite = (Button)v.findViewById(R.id.btnWhite);
+        btnBlack = (Button)v.findViewById(R.id.btnBlack);
+
+        btnWhite.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+            }
+        });
         return v;
     }
 

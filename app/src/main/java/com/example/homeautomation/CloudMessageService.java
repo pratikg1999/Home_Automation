@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.IBinder;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingService;
@@ -19,10 +20,12 @@ public class CloudMessageService extends FirebaseMessagingService {
     private static final String CHANNEL_ID = MainActivity.CHANNEL_ID;
     private static final String TAG = "mFirebaseIIDService";
     private static final String SUBSCRIBE_TO = MainActivity.SUBSCRIBE_TO;
+    private static final String IMAGE_TOPIC = MainActivity.IMAGE_TOPIC;
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         Log.d("cloud messaging", "From: " + remoteMessage.getFrom());
+//        Toast.makeText(getApplicationContext(), "got "+ remoteMessage.toString(), Toast.LENGTH_SHORT).show();
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
@@ -36,15 +39,16 @@ public class CloudMessageService extends FirebaseMessagingService {
             }
         }
 
-        // Check if message contains a notification payload.
+        Log.d("isNotification", (remoteMessage.getNotification()!=null)+"");
         if (remoteMessage.getNotification() != null) {
             Log.d("cloud messaging", "Message Notification Body: " + remoteMessage.getNotification().getBody());
-            Log.d("title", "onMessageReceived: "+ remoteMessage.getData().get("title"));
-            Log.d("message", "onMessageReceived: "+ remoteMessage.getData().get("message"));
-            Log.d("data", "onMessageReceived: "+ remoteMessage.getData().get("message"));
+            Log.d("title", "onMessageReceived: " + remoteMessage.getData().get("title"));
+            Log.d("message", "onMessageReceived: " + remoteMessage.getData().get("message"));
+            Log.d("data", "onMessageReceived: " + remoteMessage.getData().get("message"));
 
         }
-        NotificationHelper.dispNotification(this, remoteMessage.getData().get("title"), remoteMessage.getData().get("message"));
+
+        NotificationHelper.dispNotification(this, "kjsad;lkfj", remoteMessage.getData().get("message"));
     }
 
     /**
@@ -62,6 +66,7 @@ public class CloudMessageService extends FirebaseMessagingService {
 
         // Once the token is generated, subscribe to topic with the userId
         FirebaseMessaging.getInstance().subscribeToTopic(SUBSCRIBE_TO);
+        FirebaseMessaging.getInstance().subscribeToTopic(IMAGE_TOPIC);
         Log.i(TAG, "onTokenRefresh completed with token: " + token);
     }
 

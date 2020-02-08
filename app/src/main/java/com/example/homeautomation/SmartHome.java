@@ -2,6 +2,7 @@ package com.example.homeautomation;
 
 import android.content.Intent;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -30,7 +31,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-public class SmartHome extends AppCompatActivity {
+public class SmartHome extends AppCompatActivity implements ShowImageFragment.OnFragmentInteractionListener {
 
     private FirebaseAuth mAuth;
     private DatabaseReference userRef;
@@ -129,5 +130,10 @@ public class SmartHome extends AppCompatActivity {
                 break;
         }
         return true;
+    }
+
+    @Override
+    public void onFragmentInteraction(Uri uri) {
+
     }
 }
