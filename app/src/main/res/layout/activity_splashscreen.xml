@@ -51,7 +51,7 @@
 
         <TextView
             android:textAlignment="center"
-            android:text="Copyright &#169; 2019"
+            android:text="Copyright &#169; 2020"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
 
