@@ -218,6 +218,7 @@ public class DashboardFragment extends Fragment implements View.OnClickListener 
                             if (intruderBitmap != null) {
                                 Log.d("thisisintruderBitmap", intruderBitmap.toString());
                                 intrudersData.put(intruderUrl, intruderBitmap);
+                                showDialog(intruderBitmap);
                             }
                         }
                     }

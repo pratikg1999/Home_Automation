@@ -23,8 +23,8 @@ public class ShowImageFragment extends DialogFragment {
     private String imageStr;
     private ImageView ivShow;
     private Bitmap biImage;
-    private Button btnWhite;
-    private Button btnBlack;
+//    private Button btnWhite;
+//    private Button btnBlack;
 
     private OnFragmentInteractionListener mListener;
 
@@ -63,15 +63,10 @@ public class ShowImageFragment extends DialogFragment {
         ivShow = (ImageView)v.findViewById(R.id.ivShow);
 //        ivShow.setImageURI(Uri.parse(imageStr));
         ivShow.setImageBitmap(biImage);
-        btnWhite = (Button)v.findViewById(R.id.btnWhite);
-        btnBlack = (Button)v.findViewById(R.id.btnBlack);
+//        btnWhite = (Button)v.findViewById(R.id.btnWhite);
+//        btnBlack = (Button)v.findViewById(R.id.btnBlack);
 
-        btnWhite.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
 
-            }
-        });
         return v;
     }
 
