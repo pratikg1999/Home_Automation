@@ -53,8 +53,8 @@ public class splashscreen extends AppCompatActivity {
             public void onComplete(@NonNull Task<InstanceIdResult> task) {
                 if (task.isSuccessful()) {
 //                    Toast.makeText(splashscreen.this, task.getResult().getId(), Toast.LENGTH_SHORT).show();
-                    Log.d("FCM", "onComplete: token " + task.getResult().getToken());
-                    Log.d("FCM", "onComplete: instanceid " + task.getResult().getId());
+//                    Log.d("FCM", "onComplete: token " + task.getResult().getToken());
+//                    Log.d("FCM", "onComplete: instanceid " + task.getResult().getId());
                     String token = task.getResult().getToken();
                 }
             }
