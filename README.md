@@ -13,3 +13,6 @@ The on/off request is sent to the firebase realtime database so that other devic
 The python script running on the raspberry-pie detects the changes in the database and accordingly turns the device on/off.
 
 #### To run a prebuilt apk download [this](app-debug.apk) apk.
+
+
+Last Edited by: Pratik Gupta
